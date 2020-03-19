@@ -8,6 +8,6 @@ Pillow==2.3.0
 
 django-filter==1.0.4
 
-djangorestframework==3.6.4
+djangorestframework==3.9.1
 
 whitenoise==3.3.1
