@@ -33,14 +33,14 @@ class CommentSerializer(serializers.ModelSerializer):
         fields = ['id', 'content', 'post', 'user', 'created_at']
 
 class PostSerializer(serializers.ModelSerializer):
-    user = serializers.HyperlinkedRelatedField(read_only=True, view_name='user-detail')
+    user = serializers.HyperlinkedRelatedField(queryset=User.objects.all(), view_name='user-detail')
     comments = CommentSerializer(many=True, required=False, read_only=True)
     class Meta:
         model = Post
         fields = ['title', 'body', 'user', 'image', 'comments', 'created_at', 'updated_at']   
 
 class ReportSerializer(serializers.ModelSerializer):
-    user = serializers.HyperlinkedRelatedField(read_only=True, view_name='user-detail')
+    user = serializers.HyperlinkedRelatedField(queryset=User.objects.all(), view_name='user-detail')
     class Meta:
         model = Report
         fields = ['report_type', 'description', 'location', 'image', 'user', 'created_at']
