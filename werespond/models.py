@@ -109,6 +109,11 @@ class Group(models.Model):
     
     display_members.short_description = 'Members'
 
+class Membership(models.Model):
+    member = models.ForeignKey('User')
+    group = models.ForeignKey('Group')
+    join_date = models.DateTimeField()
+
 class Post(models.Model):
     id = models.AutoField(primary_key=True)
     user = models.ForeignKey('User', on_delete=models.CASCADE, related_name="post_user")
