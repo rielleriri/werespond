@@ -26,18 +26,19 @@ class MembershipSerializer(serializers.ModelSerializer):
         model = Membership
         fields = ('member', 'group', 'join_date')
 
-class CommentSerializer(serializers.ModelSerializer):
-    user = UserSerializer(required=False)
-    class Meta:
-        model = Comment
-        fields = ['id', 'content', 'post', 'user', 'created_at']
-
 class PostSerializer(serializers.ModelSerializer):
     user = serializers.HyperlinkedRelatedField(queryset=User.objects.all(), view_name='user-detail')
-    comments = CommentSerializer(many=True, required=False, read_only=True)
+    comments = serializers.HyperlinkedRelatedField(queryset=Comment.objects.all(), many=True, view_name='comment-detail')
     class Meta:
         model = Post
         fields = ['title', 'body', 'user', 'image', 'comments', 'created_at', 'updated_at']   
+
+class CommentSerializer(serializers.ModelSerializer):
+    user = serializers.HyperlinkedRelatedField(queryset=User.objects.all(), view_name='user-detail')
+    post = serializers.HyperlinkedRelatedField(queryset=Post.objects.all(), view_name='post-detail')
+    class Meta:
+        model = Comment
+        fields = ['id', 'content', 'post', 'user', 'created_at']
 
 class ReportSerializer(serializers.ModelSerializer):
     user = serializers.HyperlinkedRelatedField(queryset=User.objects.all(), view_name='user-detail')
