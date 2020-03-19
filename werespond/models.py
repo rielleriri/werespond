@@ -116,7 +116,7 @@ class Membership(models.Model):
 
 class Post(models.Model):
     id = models.AutoField(primary_key=True)
-    user = models.ForeignKey('User', on_delete=models.CASCADE, related_name="post_user")
+    user = models.ForeignKey('User', on_delete=models.CASCADE, related_name="posts")
     title = models.CharField('Post Title', max_length=60, default='Title')
     body = models.CharField("Post Body", max_length=600)
     image = models.ImageField(upload_to=None, height_field=None, width_field=None, max_length=100, null=True)
