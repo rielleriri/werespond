@@ -7,20 +7,24 @@ class GroupSerializer(serializers.ModelSerializer):
         model = Group
         fields = ['id', 'name', 'description', 'members', 'created_at', 'updated_at']
 
-class MembershipSerializer(serializers.HyperlinkedModelSerializer):
-    id = serializers.ReadOnlyField(source='group.id')
-    name = serializers.ReadOnlyField(source='group.name')
+class MembershipSerializer(serializers.ModelSerializer):
+    """Used as a nested serializer by MemberSerializer"""
     class Meta:
         model = Membership
-        fields = ('id', 'name', 'join_date', )
+        fields = ('member', 'group', 'join_date' )
 
 class UserSerializer(serializers.ModelSerializer):
     user = serializers.ReadOnlyField(source='user.hp_no')
-    groups = MembershipSerializer(source='membership_set', many=True, required=False)
+    groups = serializers.SerializerMethodField()
     cases = serializers.PrimaryKeyRelatedField(queryset=Case.objects.all(), many=True)
     class Meta:
         model = User
         fields = ['hp_no', 'name', 'gender', 'email', 'groups', 'cases', 'created_at', 'updated_at', 'user', 'is_admin']
+
+    def get_groups(self, obj):
+        "obj is a Member instance. Returns list of dicts"""
+        qset = Membership.objects.filter(user=obj)
+        return [MembershipSerializer(m).data for m in qset]
 
 class CommentSerializer(serializers.ModelSerializer):
     user = serializers.StringRelatedField(many=True)
