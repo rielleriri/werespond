@@ -110,8 +110,8 @@ class Group(models.Model):
     display_members.short_description = 'Members'
 
 class Membership(models.Model):
-    member = models.ForeignKey('User')
-    group = models.ForeignKey('Group')
+    member = models.ForeignKey('User', on_delete=models.CASCADE)
+    group = models.ForeignKey('Group', on_delete=models.CASCADE)
     join_date = models.DateTimeField()
 
 class Post(models.Model):
