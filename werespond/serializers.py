@@ -7,9 +7,16 @@ class GroupSerializer(serializers.ModelSerializer):
         model = Group
         fields = ['id', 'name', 'description', 'members', 'created_at', 'updated_at']
 
+class MembershipSerializer(serializers.HyperlinkedModelSerializer):
+    id = serializers.ReadOnlyField(source='group.id')
+    name = serializers.ReadOnlyField(source='group.name')
+    class Meta:
+        model = Membership
+        fields = ('id', 'name', 'join_date', )
+
 class UserSerializer(serializers.ModelSerializer):
     user = serializers.ReadOnlyField(source='user.hp_no')
-    groups = serializers.PrimaryKeyRelatedField(queryset=Group.objects.all(), many=True)
+    groups = MembershipSerializer(source='membership_set', many=True)
     cases = serializers.PrimaryKeyRelatedField(queryset=Case.objects.all(), many=True)
     class Meta:
         model = User
