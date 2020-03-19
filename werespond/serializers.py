@@ -1,57 +1,56 @@
 from rest_framework import serializers
-from werespond.models import User, Membership, Post, Comment, Group, Response, Report, Case, Achievement, AchievementProgress, AchievementReward, Event, EventAttendance
+from werespond.models import User, Membership, Post, Comment, Group, Response, Report, Case, Certificate, UserCertificate, Achievement, AchievementProgress, AchievementReward, Event, EventAttendance
 
 class GroupSerializer(serializers.ModelSerializer):
-    members = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), many=True) # to list out all members, many to many 
+    members = serializers.HyperlinkedRelatedField(many=True, view_name='user-detail')
     class Meta:
         model = Group
         fields = ['id', 'name', 'description', 'members', 'created_at', 'updated_at']
 
 class MembershipSerializer(serializers.ModelSerializer):
-    """Used as a nested serializer by MemberSerializer"""
+    member = UserSerializer(required=False)
+    group = UserSerializer(required=False)
     class Meta:
         model = Membership
-        fields = ('member', 'group', 'join_date' )
+        fields = ('member', 'group', 'join_date')
 
 class UserSerializer(serializers.ModelSerializer):
-    user = serializers.ReadOnlyField(source='user.hp_no')
-    groups = serializers.SerializerMethodField()
-    cases = serializers.PrimaryKeyRelatedField(queryset=Case.objects.all(), many=True)
+    # user = serializers.ReadOnlyField(source='user.hp_no')
+    groups = serializers.HyperlinkedRelatedField(many=True, view_name='group-detail')
+    cases = serializers.HyperlinkedRelatedField(many=True, view_name='case-detail')
+
     class Meta:
         model = User
         fields = ['hp_no', 'name', 'gender', 'email', 'groups', 'cases', 'created_at', 'updated_at', 'user', 'is_admin']
 
-    def get_groups(self, obj):
-        "obj is a Member instance. Returns list of dicts"""
-        qset = Membership.objects.filter(member=obj)
-        return [MembershipSerializer(m).data for m in qset]
-
 class CommentSerializer(serializers.ModelSerializer):
-    user = serializers.StringRelatedField(many=True)
+    user = UserSerializer(required=False)
     class Meta:
         model = Comment
         fields = ['id', 'content', 'post', 'user', 'created_at']
 
 class PostSerializer(serializers.ModelSerializer):
-    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
-    comments = CommentSerializer(many=True, required=False, read_only=True) # to list out all comments
+    user = serializers.HyperlinkedRelatedField(view_name='user-detail')
+    comments = CommentSerializer(many=True, required=False, read_only=True)
     class Meta:
         model = Post
         fields = ['title', 'body', 'user', 'image', 'comments', 'created_at', 'updated_at']   
 
 class ReportSerializer(serializers.ModelSerializer):
-    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    user = serializers.HyperlinkedRelatedField(view_name='user-detail')
     class Meta:
         model = Report
         fields = ['report_type', 'description', 'location', 'image', 'user', 'created_at']
 
 class CaseSerializer(serializers.ModelSerializer):
-    users = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), many=True)
+    users = serializers.HyperlinkedRelatedField(many=True, view_name='user-detail')
     class Meta:
         model = Case
         fields = ['case_type', 'address', 'time', 'description', 'id_required', 'updated_at', 'users']
 
 class ResponseSerializer(serializers.ModelSerializer):
+    user = UserSerializer(required=False)
+    case = CaseSerializer(required=False)
     class Meta:
         model = Response
         fields = ['id', 'user', 'case', 'response', 'arrival_time']
@@ -64,7 +63,7 @@ class AchievementProgressSerializer(serializers.HyperlinkedModelSerializer):
         fields = ['id', 'name', 'awarded']
 
 class AchievementSerializer(serializers.ModelSerializer):
-    users = AchievementProgressSerializer(source='achievementprogress_set', many=True)
+    users = serializers.HyperlinkedRelatedField(view_name='user-detail')
     class Meta:
         model = Achievement
         fields = ['id', 'name', 'condition', 'users', 'created_at']
@@ -76,16 +75,26 @@ class AchievementRewardSerializer(serializers.ModelSerializer): #one to one rs
         fields = ['achievement', 'reward']
 
 class EventAttendanceSerializer(serializers.ModelSerializer):
-    id = serializers.ReadOnlyField(source='event.id')
-    name = serializers.ReadOnlyField(source='event.name')
+    event = EventSerializer(required=False)
     class Meta:
         model = EventAttendance 
         fields = ['id', 'event', 'attendance']
 
 class EventSerializer(serializers.ModelSerializer):
-    users = EventAttendanceSerializer(source='eventattendance_set', many=True)
+    users = serializers.HyperlinkedRelatedField(many=True, view_name='user-detail')
     class Meta:
         model = Event
         fields = ['id', 'name', 'details', 'time', 'organisers', 'users']
 
+class CertificateSerializer(serializers.ModelSerializer):
+    users = serializers.HyperlinkedRelatedField(many=True, view_name='user-detail')
+    class Meta:
+        model = Certificate
+        fields = ['cert_type', 'image', 'expiry', 'users', 'submitted']
 
+class UserCertificateSerializer(serializers.ModelSerializer):
+    user = UserSerializer(required=False)
+    certificate = CertificateSerializer(required=False)
+    class Meta:
+        model = UserCertificate
+        fields = ['cert_type', 'certificate', 'user', 'awarded', 'expiry']
