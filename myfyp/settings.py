@@ -25,8 +25,7 @@ SECRET_KEY = '&ye*rb7q*d@#dy6fh(*_=-rei=d-9t8tv(9ssyz$(9jd4garh@'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['0.0.0.0', '127.0.0.1', 'https://fyp-werespond.herokuapp.com/']
-
+ALLOWED_HOSTS = ['127.0.0.1', '.herokuapp.com']
 
 # Application definition
 
