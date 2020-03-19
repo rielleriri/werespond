@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from werespond.models import User, Post, Comment, Group, Response, Report, Case, Achievement, AchievementProgress, AchievementReward, Event, EventAttendance
+from werespond.models import User, Membership, Post, Comment, Group, Response, Report, Case, Achievement, AchievementProgress, AchievementReward, Event, EventAttendance
 
 class GroupSerializer(serializers.ModelSerializer):
     members = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), many=True) # to list out all members, many to many 
