@@ -55,6 +55,7 @@ router.register(r'group', views.GroupViewSet)
 router.register(r'case', views.CaseViewSet)
 router.register(r'achievement', views.AchievementViewSet)
 router.register(r'report', views.ReportViewSet)
+router.register(r'certificate', views.CertificateViewSet)
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
