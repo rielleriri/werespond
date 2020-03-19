@@ -223,10 +223,9 @@ class EventAttendance(models.Model):
     class Meta:
         ordering = ('id',)
 
-class CertificateForm(models.Model):
+class Certificate(models.Model):
     id = models.AutoField(primary_key=True)
-    upload_image = models.ImageField(upload_to=None, height_field=None, width_field=None, max_length=100, null=False)
-    user = models.ForeignKey('User', on_delete=models.CASCADE)
+    image = models.ImageField(upload_to=None, height_field=None, width_field=None, max_length=100, null=False)
     expiry = models.DateField("User Cert Expiry")
     CERT_TYPES = (
         ('c', 'CPR'),
@@ -237,21 +236,11 @@ class CertificateForm(models.Model):
         ('p', 'Psychological First Aid'),
         ('f', 'Fire Safety')
     )
-
     cert_type = models.CharField(
         "Cert Type",
         max_length=1,
         choices=CERT_TYPES,
     )
-
-    class Meta:
-        ordering = ('id',)
-
-class Certificate(models.Model):
-    id = models.AutoField(primary_key=True)
-    name = models.CharField("Cert Name", max_length=100)
-    created_at = models.DateTimeField(auto_now_add=True, editable=True)
-    cert_type = models.CharField("Cert Type", max_length=100)
     users = models.ManyToManyField(
         User, 
         through='UserCertificate',
@@ -259,6 +248,7 @@ class Certificate(models.Model):
         related_name='certificates',
         blank=True
     )   
+    submitted = models.DateTimeField(auto_now=True, editable=True)
 
     class Meta:
         ordering = ('id',)
@@ -269,6 +259,20 @@ class UserCertificate(models.Model):
     user = models.ForeignKey('User', on_delete=models.CASCADE)
     awarded = models.DateTimeField(auto_now=True, editable=True)
     expiry = models.DateField("User Cert Expiry")
+    CERT_TYPES = (
+        ('c', 'CPR'),
+        ('a', 'AED'),
+        ('b', 'CPR+AED'),
+        ('s', 'Standard First Aid'),
+        ('o', 'Occupational First Aid'),
+        ('p', 'Psychological First Aid'),
+        ('f', 'Fire Safety')
+    )
+    cert_type = models.CharField(
+        "Cert Type",
+        max_length=1,
+        choices=CERT_TYPES,
+    )
 
     class Meta:
         ordering = ('id',)
