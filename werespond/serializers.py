@@ -16,7 +16,7 @@ class MembershipSerializer(serializers.HyperlinkedModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     user = serializers.ReadOnlyField(source='user.hp_no')
-    groups = MembershipSerializer(source='membership_set', many=True)
+    groups = MembershipSerializer(source='membership_set', many=True, required=False)
     cases = serializers.PrimaryKeyRelatedField(queryset=Case.objects.all(), many=True)
     class Meta:
         model = User
