@@ -13,8 +13,10 @@ urlpatterns = [
     path('cases/<int:pk>/', views.CaseDetail.as_view()),
     path('achievements/', views.AchievementList.as_view()),
     path('achievements/<int:pk>/', views.AchievementDetail.as_view()),
-    path('reports/', views.AchievementList.as_view()),
-    path('reports/<int:pk>/', views.AchievementDetail.as_view()),
+    path('reports/', views.ReportList.as_view()),
+    path('reports/<int:pk>/', views.ReportDetail.as_view()),
+    path('certificates/', views.CertificateList.as_view()),
+    path('certificates/<int:pk>/', views.CertificateDetail.as_view()),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)
