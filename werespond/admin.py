@@ -28,3 +28,8 @@ admin.site.register(User, UserAdmin)
 # class CommentAdmin(admin.ModelAdmin):
 #     list_display = ('content', 'post', 'user', 'created_at')
 # admin.site.register(Comment, CommentAdmin)
+
+admin.site.register(Post)
+admin.site.register(Case)
+admin.site.register(Response)
+admin.site.register(Group)
