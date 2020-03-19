@@ -23,7 +23,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     def get_groups(self, obj):
         "obj is a Member instance. Returns list of dicts"""
-        qset = Membership.objects.filter(user=obj)
+        qset = Membership.objects.filter(member=obj)
         return [MembershipSerializer(m).data for m in qset]
 
 class CommentSerializer(serializers.ModelSerializer):
