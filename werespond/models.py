@@ -84,7 +84,7 @@ class Response(models.Model):
     user = models.ForeignKey('User', on_delete=models.CASCADE)
     case = models.ForeignKey('Case', on_delete=models.CASCADE)
     response = models.BooleanField("Did User Respond?", default=False)
-    arrival_time = models.DateField("User Responded At")
+    arrival_time = models.DateField("User Responded At", auto_now_add)
 
     class Meta:
         ordering = ('id',)
