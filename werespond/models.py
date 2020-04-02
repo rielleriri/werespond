@@ -1,5 +1,6 @@
 from __future__ import unicode_literals
 from django.db import models
+import datetime as dt
 
 # Create your models here.
 class User(models.Model):
@@ -18,6 +19,14 @@ class User(models.Model):
     
     class Meta:
         ordering = ('hp_no',) 
+
+    def create(self, validated_data):
+        groups_data = validated_data.pop('groups')
+        user = User.objects.create(**validated_data)
+        for group_data in groups_data:
+            # Group.objects.create(user=user, **group_data)
+            user.groups.add(group_data)
+        return user
 
     def __str__(self):
         return '%s' % (self.name)
@@ -55,10 +64,7 @@ class Case(models.Model):
     #many-to-many rs
     users = models.ManyToManyField(
         User, 
-        through='Response',
-        through_fields=('case','user') ,
         related_name='cases',
-        blank=True
     )
 
     CASE_TYPES = (
@@ -79,15 +85,6 @@ class Case(models.Model):
        return unicode(self.description)
 # a case can be shown to many users 
 
-class Response(models.Model):
-    id = models.AutoField(primary_key=True)
-    user = models.ForeignKey('User', on_delete=models.CASCADE)
-    case = models.ForeignKey('Case', on_delete=models.CASCADE)
-    response = models.BooleanField("Did User Respond?", default=False)
-    arrival_time = models.DateField("User Responded At", auto_now_add=True)
-
-    class Meta:
-        ordering = ('id',)
 
 class Group(models.Model):
     id = models.AutoField(primary_key=True)
@@ -100,60 +97,46 @@ class Group(models.Model):
     class Meta:
         ordering = ('id',) 
 
-    def __unicode__(self):
-        return unicode(self.name)
+class Save(models.Model):
+    id = models.AutoField(primary_key=True)
+    user = models.ForeignKey('User', on_delete=models.CASCADE)
+    post = models.ForeignKey('Post', related_name='saves', on_delete=models.CASCADE)
 
-    def display_members(self):
-        """Create a string for the User. This is required to display members in Admin."""
-        return ', '.join(members.name for members in self.members.all()[:3])
-    
-    display_members.short_description = 'Members'
+    class Meta:
+        ordering = ('id',)
 
-class Membership(models.Model):
-    member = models.ForeignKey('User', on_delete=models.CASCADE)
-    group = models.ForeignKey('Group', on_delete=models.CASCADE)
-    join_date = models.DateTimeField(auto_now_add=True)
+class Vote(models.Model):
+    id = models.AutoField(primary_key=True)
+    user = models.ForeignKey('User', on_delete=models.CASCADE, related_name="votes_user")
+    post = models.ForeignKey('Post', related_name='votes', on_delete=models.CASCADE)
+
+    class Meta:
+        ordering = ('id',)
 
 class Post(models.Model):
     id = models.AutoField(primary_key=True)
-    user = models.ForeignKey('User', on_delete=models.CASCADE, related_name="posts")
+    user = models.ForeignKey('User', on_delete=models.CASCADE, related_name="post_user")
+    group = models.ForeignKey('Group', on_delete=models.CASCADE)
     title = models.CharField('Post Title', max_length=60, default='Title')
     body = models.CharField("Post Body", max_length=600)
     image = models.ImageField(upload_to=None, height_field=None, width_field=None, max_length=100, null=True)
-    created_at= models.DateTimeField("Group Created At", auto_now_add=True, editable=True)
-    updated_at = models.DateTimeField("Group Updated At", auto_now=True, editable=True) #default setting editable=False, blank=True
+    created_at= models.DateTimeField("Created At", auto_now_add=True, editable=True)
+    updated_at = models.DateTimeField("Updated At", auto_now=True, editable=True) #default setting editable=False, blank=True
 
     class Meta:
         ordering = ('id',) 
 
     def was_posted_today(self):
         return self.created_at.date() == datetime.date.today()
-
-class Save(models.Model):
-    id = models.AutoField(primary_key=True)
-    post = models.ForeignKey('Post', on_delete=models.CASCADE)
-    user = models.ForeignKey('User', on_delete=models.CASCADE)
-    is_saved = models.BooleanField
-
-    class Meta:
-        ordering = ('id',)
     
-class PostAccess(models.Model):
-    id = models.AutoField(primary_key=True)
-    post = models.ForeignKey('Post', on_delete=models.CASCADE)
-    group = models.ForeignKey('Group', on_delete=models.CASCADE)
-    is_group = models.BooleanField
+# class PostAccess(models.Model):
+#     id = models.AutoField(primary_key=True)
+#     post = models.ForeignKey('Post', on_delete=models.CASCADE)
+#     group = models.ForeignKey('Group', on_delete=models.CASCADE)
+#     is_group = models.BooleanField
 
-    class Meta:
-        ordering = ('id',) 
-
-class Vote(models.Model):
-    id = models.AutoField(primary_key=True)
-    post = models.ForeignKey('Post', on_delete=models.CASCADE, related_name="votes")
-    user = models.ForeignKey('User', on_delete=models.CASCADE, related_name="votes_user")
-
-    class Meta:
-        ordering = ('id',)
+#     class Meta:
+#         ordering = ('id',) 
 
 class Comment(models.Model):
     id = models.AutoField(primary_key=True)
@@ -223,9 +206,10 @@ class EventAttendance(models.Model):
     class Meta:
         ordering = ('id',)
 
-class Certificate(models.Model):
+class CertificateForm(models.Model):
     id = models.AutoField(primary_key=True)
-    image = models.ImageField(upload_to=None, height_field=None, width_field=None, max_length=100, null=False)
+    upload_image = models.ImageField(upload_to=None, height_field=None, width_field=None, max_length=100, null=False)
+    user = models.ForeignKey('User', on_delete=models.CASCADE)
     expiry = models.DateField("User Cert Expiry")
     CERT_TYPES = (
         ('c', 'CPR'),
@@ -236,11 +220,21 @@ class Certificate(models.Model):
         ('p', 'Psychological First Aid'),
         ('f', 'Fire Safety')
     )
+
     cert_type = models.CharField(
         "Cert Type",
         max_length=1,
         choices=CERT_TYPES,
     )
+
+    class Meta:
+        ordering = ('id',)
+
+class Certificate(models.Model):
+    id = models.AutoField(primary_key=True)
+    name = models.CharField("Cert Name", max_length=100)
+    created_at = models.DateTimeField(auto_now_add=True, editable=True)
+    cert_type = models.CharField("Cert Type", max_length=100)
     users = models.ManyToManyField(
         User, 
         through='UserCertificate',
@@ -248,7 +242,6 @@ class Certificate(models.Model):
         related_name='certificates',
         blank=True
     )   
-    submitted = models.DateTimeField(auto_now=True, editable=True)
 
     class Meta:
         ordering = ('id',)
@@ -259,20 +252,6 @@ class UserCertificate(models.Model):
     user = models.ForeignKey('User', on_delete=models.CASCADE)
     awarded = models.DateTimeField(auto_now=True, editable=True)
     expiry = models.DateField("User Cert Expiry")
-    CERT_TYPES = (
-        ('c', 'CPR'),
-        ('a', 'AED'),
-        ('b', 'CPR+AED'),
-        ('s', 'Standard First Aid'),
-        ('o', 'Occupational First Aid'),
-        ('p', 'Psychological First Aid'),
-        ('f', 'Fire Safety')
-    )
-    cert_type = models.CharField(
-        "Cert Type",
-        max_length=1,
-        choices=CERT_TYPES,
-    )
 
     class Meta:
         ordering = ('id',)

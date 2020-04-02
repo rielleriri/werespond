@@ -1,19 +1,27 @@
 
-from werespond.models import User, Post, Comment, Group, Report, Case, Certificate, Achievement, AchievementProgress, AchievementReward, Event, EventAttendance
-from werespond.serializers import UserSerializer, PostSerializer, CommentSerializer, CertificateSerializer, GroupSerializer, ReportSerializer, CaseSerializer, AchievementSerializer
+from werespond.models import User, Post, Comment, Save, Vote, Group, Report, Case, Achievement, AchievementProgress, AchievementReward, Event, EventAttendance
+from werespond.serializers import UserSerializer, PostSerializer, VoteSerializer, SaveSerializer, CommentSerializer, GroupSerializer, ReportSerializer, CaseSerializer, AchievementSerializer
 from rest_framework import viewsets
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
-class PostViewSet(viewsets.ModelViewSet):
-    queryset = Post.objects.all()
-    serializer_class = PostSerializer
-
 class CommentViewSet(viewsets.ModelViewSet):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
+
+class VoteViewSet(viewsets.ModelViewSet):
+    queryset = Vote.objects.all()
+    serializer_class = VoteSerializer
+
+class SaveViewSet(viewsets.ModelViewSet):
+    queryset = Save.objects.all()
+    serializer_class = SaveSerializer
+
+class PostViewSet(viewsets.ModelViewSet):
+    queryset = Post.objects.all()
+    serializer_class = PostSerializer
 
 class GroupViewSet(viewsets.ModelViewSet):
     queryset = Group.objects.all()
@@ -30,7 +38,3 @@ class CaseViewSet(viewsets.ModelViewSet):
 class AchievementViewSet(viewsets.ModelViewSet):
     queryset = Achievement.objects.all()
     serializer_class = AchievementSerializer
-
-class CertificateViewSet(viewsets.ModelViewSet):
-    queryset = Certificate.objects.all()
-    serializer_class = CertificateSerializer

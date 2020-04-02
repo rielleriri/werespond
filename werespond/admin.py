@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 # Register your models here.
-from .models import User, Case, Response, Group, Post, Comment
+from .models import User, Case, Group, Post, Comment
 
 # admin.site.register(User)
 
@@ -31,5 +31,4 @@ admin.site.register(User, UserAdmin)
 
 admin.site.register(Post)
 admin.site.register(Case)
-admin.site.register(Response)
 admin.site.register(Group)

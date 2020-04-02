@@ -51,11 +51,12 @@ router = DefaultRouter()
 router.register(r'user', views.UserViewSet)
 router.register(r'post', views.PostViewSet)
 router.register(r'comment', views.CommentViewSet)
+router.register(r'save', views.SaveViewSet)
+router.register(r'vote', views.VoteViewSet)
 router.register(r'group', views.GroupViewSet)
 router.register(r'case', views.CaseViewSet)
 router.register(r'achievement', views.AchievementViewSet)
 router.register(r'report', views.ReportViewSet)
-router.register(r'certificate', views.CertificateViewSet)
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
