@@ -85,7 +85,6 @@ class Case(models.Model):
        return unicode(self.description)
 # a case can be shown to many users 
 
-
 class Group(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField("Group Name", max_length=50)
@@ -97,18 +96,22 @@ class Group(models.Model):
     class Meta:
         ordering = ('id',) 
 
-class Save(models.Model):
+#membership
+
+class PostSave(models.Model):
     id = models.AutoField(primary_key=True)
     user = models.ForeignKey('User', on_delete=models.CASCADE)
     post = models.ForeignKey('Post', related_name='saves', on_delete=models.CASCADE)
+    is_saved = models.BooleanField
 
     class Meta:
         ordering = ('id',)
 
-class Vote(models.Model):
+class PostVote(models.Model):
     id = models.AutoField(primary_key=True)
     user = models.ForeignKey('User', on_delete=models.CASCADE, related_name="votes_user")
     post = models.ForeignKey('Post', related_name='votes', on_delete=models.CASCADE)
+    is_voted = models.BooleanField
 
     class Meta:
         ordering = ('id',)
@@ -128,15 +131,6 @@ class Post(models.Model):
 
     def was_posted_today(self):
         return self.created_at.date() == datetime.date.today()
-    
-# class PostAccess(models.Model):
-#     id = models.AutoField(primary_key=True)
-#     post = models.ForeignKey('Post', on_delete=models.CASCADE)
-#     group = models.ForeignKey('Group', on_delete=models.CASCADE)
-#     is_group = models.BooleanField
-
-#     class Meta:
-#         ordering = ('id',) 
 
 class Comment(models.Model):
     id = models.AutoField(primary_key=True)
@@ -171,11 +165,11 @@ class AchievementReward(models.Model):
     class Meta:
         ordering = ('achievement',)
 
-class AchievementProgress(models.Model):
+class UserAchievement(models.Model):
     id = models.AutoField(primary_key=True)
     user = models.ForeignKey('User', on_delete=models.CASCADE)
     achievement = models.ForeignKey('Achievement', on_delete=models.CASCADE)
-    awarded = models.DateTimeField(auto_now=True, editable=True)
+    date_awarded = models.DateTimeField(auto_now=True, editable=True)
 
     class Meta:
         ordering = ('id',)
@@ -186,31 +180,18 @@ class Event(models.Model):
     details = models.CharField("Event Details", max_length=500)
     time = models.DateTimeField("Event Time", auto_now=False, auto_now_add=False)
     organisers = models.CharField("Event Organisers", max_length=200)
+    created_at = models.DateTimeField(auto_now_add=True, editable=True)
     users = models.ManyToManyField(
         User,
-        through='EventAttendance',
-        through_fields=('event','user') ,
-        related_name='events',
-        blank=True
+        related_name='events'
     )    
 
     class Meta:
         ordering = ('id',)
 
-class EventAttendance(models.Model):
+class Certificate(models.Model):
     id = models.AutoField(primary_key=True)
-    event = models.ForeignKey('Event', on_delete=models.CASCADE)
-    user = models.ForeignKey('User', on_delete=models.CASCADE)
-    attendance = models.BooleanField("Event Attendance")
-
-    class Meta:
-        ordering = ('id',)
-
-class CertificateForm(models.Model):
-    id = models.AutoField(primary_key=True)
-    upload_image = models.ImageField(upload_to=None, height_field=None, width_field=None, max_length=100, null=False)
-    user = models.ForeignKey('User', on_delete=models.CASCADE)
-    expiry = models.DateField("User Cert Expiry")
+    created_at = models.DateTimeField(auto_now_add=True, editable=True)
     CERT_TYPES = (
         ('c', 'CPR'),
         ('a', 'AED'),
@@ -226,16 +207,7 @@ class CertificateForm(models.Model):
         max_length=1,
         choices=CERT_TYPES,
     )
-
-    class Meta:
-        ordering = ('id',)
-
-class Certificate(models.Model):
-    id = models.AutoField(primary_key=True)
-    name = models.CharField("Cert Name", max_length=100)
-    created_at = models.DateTimeField(auto_now_add=True, editable=True)
-    cert_type = models.CharField("Cert Type", max_length=100)
-    users = models.ManyToManyField(
+    user = models.ManyToManyField(
         User, 
         through='UserCertificate',
         through_fields=('certificate','user') ,
@@ -250,8 +222,8 @@ class UserCertificate(models.Model):
     id = models.AutoField(primary_key=True)
     certificate = models.ForeignKey('Certificate', on_delete=models.CASCADE)
     user = models.ForeignKey('User', on_delete=models.CASCADE)
-    awarded = models.DateTimeField(auto_now=True, editable=True)
     expiry = models.DateField("User Cert Expiry")
+    awarded_at = models.DateTimeField(auto_now_add=True, editable=True)
 
     class Meta:
         ordering = ('id',)
@@ -265,7 +237,7 @@ class QuizQuestion(models.Model):
 
 class QuizChoice(models.Model):
     id = models.AutoField(primary_key=True)
-    correct = models.BooleanField("Correct Ans")
+    is_correct = models.BooleanField("Correct Ans")
     question = models.ForeignKey('QuizQuestion', on_delete=models.CASCADE)
     choice = models.CharField("Choice", max_length=500)
 
@@ -277,7 +249,7 @@ class QuizUserAnswer(models.Model):
     user = models.ForeignKey('User', on_delete=models.CASCADE)
     question = models.ForeignKey('QuizQuestion', on_delete=models.CASCADE)
     question_choice = models.ForeignKey('QuizChoice', on_delete=models.CASCADE)
-    is_right = models.BooleanField
+    point_awarded = models.BooleanField
 
     class Meta:
         ordering = ('id',)
