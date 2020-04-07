@@ -1,5 +1,5 @@
 
-from werespond.models import User, Post, Comment, PostSave, PostVote, Group, Report, Case, Achievement, UserAchievement, AchievementReward, Event
+from werespond.models import User, Post, Comment, PostSave, PostVote, Group, Report, Case, Achievement, UserAchievement, AchievementReward, Event, EventAttendance
 from werespond.serializers import UserSerializer, PostSerializer, VoteSerializer, SaveSerializer, CommentSerializer, GroupSerializer, ReportSerializer, CaseSerializer, AchievementSerializer
 from rest_framework import viewsets
 
