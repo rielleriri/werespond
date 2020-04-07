@@ -12,11 +12,11 @@ class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
 
 class VoteViewSet(viewsets.ModelViewSet):
-    queryset = Vote.objects.all()
+    queryset = PostVote.objects.all()
     serializer_class = VoteSerializer
 
 class SaveViewSet(viewsets.ModelViewSet):
-    queryset = Save.objects.all()
+    queryset = PostSave.objects.all()
     serializer_class = SaveSerializer
 
 class PostViewSet(viewsets.ModelViewSet):
