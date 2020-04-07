@@ -149,7 +149,7 @@ class Achievement(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, editable=True)
     users = models.ManyToManyField(
         User, 
-        through='AchievementProgress',
+        through='UserAchievement',
         through_fields=('achievement','user') ,
         related_name='achievements',
         blank=True
