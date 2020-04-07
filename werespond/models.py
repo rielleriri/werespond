@@ -102,7 +102,7 @@ class PostSave(models.Model):
     id = models.AutoField(primary_key=True)
     user = models.ForeignKey('User', on_delete=models.CASCADE)
     post = models.ForeignKey('Post', related_name='saves', on_delete=models.CASCADE)
-    is_saved = models.BooleanField
+    is_saved = models.BooleanField(default=True)
 
     class Meta:
         ordering = ('id',)
@@ -111,7 +111,7 @@ class PostVote(models.Model):
     id = models.AutoField(primary_key=True)
     user = models.ForeignKey('User', on_delete=models.CASCADE, related_name="votes_user")
     post = models.ForeignKey('Post', related_name='votes', on_delete=models.CASCADE)
-    is_voted = models.BooleanField
+    is_voted = models.BooleanField(default=True)
 
     class Meta:
         ordering = ('id',)
