@@ -41,12 +41,13 @@ class VoteSerializer(serializers.ModelSerializer):
 
 class PostSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    group = serializers.PrimaryKeyRelatedField(queryset=Group.objects.all())
     saves = SaveSerializer(many=True, read_only=True)
     votes = VoteSerializer(many=True, read_only=True)
     comments = CommentSerializer(many=True, read_only=True) # to list out all comments
     class Meta:
         model = Post
-        fields = ['id', 'title', 'body', 'user', 'image', 'comments', 'votes', 'saves', 'created_at', 'updated_at']   
+        fields = ['id', 'title', 'body', 'user', 'group', 'image', 'comments', 'votes', 'saves', 'created_at', 'updated_at']   
 
 class ReportSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
