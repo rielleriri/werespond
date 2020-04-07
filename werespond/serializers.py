@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from werespond.models import User, Post, Vote, Save, Comment, Group, Report, Case, Achievement, AchievementProgress, AchievementReward, Event, EventAttendance
+from werespond.models import User, Post, PostVote, PostSave, Comment, Group, Report, Case, Achievement, UserAchievement, AchievementReward, Event, EventAttendance
 
 class GroupSerializer(serializers.ModelSerializer):
     members = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), many=True) # to list out all members, many to many 
@@ -30,13 +30,13 @@ class CommentSerializer(serializers.ModelSerializer):
 class SaveSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
     class Meta:
-        model = Save
+        model = PostSave
         fields = ['post', 'user']
 
 class VoteSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
     class Meta:
-        model = Vote
+        model = PostVote
         fields = ['post', 'user']
 
 class PostSerializer(serializers.ModelSerializer):
@@ -58,7 +58,7 @@ class AchievementProgressSerializer(serializers.HyperlinkedModelSerializer):
     id = serializers.ReadOnlyField(source='achievement.id') # through model
     name = serializers.ReadOnlyField(source='achievement.name')
     class Meta:
-        model = AchievementProgress
+        model = UserAchievement
         fields = ['id', 'name', 'awarded']
 
 class AchievementSerializer(serializers.ModelSerializer):
