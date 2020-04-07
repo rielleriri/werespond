@@ -183,8 +183,20 @@ class Event(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, editable=True)
     users = models.ManyToManyField(
         User,
-        related_name='events'
+        through='EventAttendance',
+        through_fields=('event','user') ,
+        related_name='events',
+        blank=True
     )    
+
+    class Meta:
+        ordering = ('id',)
+
+class EventAttendance(models.Model):
+    id = models.AutoField(primary_key=True)
+    event = models.ForeignKey('Event', on_delete=models.CASCADE)
+    user = models.ForeignKey('User', on_delete=models.CASCADE)
+    attendance = models.BooleanField("Event Attendance")
 
     class Meta:
         ordering = ('id',)
