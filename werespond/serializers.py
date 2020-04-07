@@ -31,13 +31,13 @@ class SaveSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
     class Meta:
         model = PostSave
-        fields = ['post', 'user']
+        fields = ['post', 'user', 'is_saved']
 
 class VoteSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
     class Meta:
         model = PostVote
-        fields = ['post', 'user']
+        fields = ['post', 'user', 'is_voted']
 
 class PostSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
