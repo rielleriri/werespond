@@ -1,53 +1,105 @@
 from rest_framework import serializers
-from werespond.models import User, Post, PostVote, PostSave, Comment, Group, Report, Case, Achievement, UserAchievement, AchievementReward, Event, EventAttendance, UserCertificate, CertificateForm
+from werespond.models import User, Response, Post, PostVote, PostSave, Comment, Group, Report, Case, Achievement, UserAchievement, AchievementReward, Event, EventAttendance, UserCertificate, CertificateForm
 
-class GroupSerializer(serializers.ModelSerializer):
-    members = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), many=True) # to list out all members, many to many 
-    class Meta:
-        model = Group
-        fields = ['id', 'name', 'description', 'members']
-
-class CaseSerializer(serializers.ModelSerializer):
-    users = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), many=True)
-    class Meta:
-        model = Case
-        fields = ['case_type', 'address', 'time', 'description', 'users']
-
-class UserSerializer(serializers.ModelSerializer):
-    user = serializers.ReadOnlyField(source='user.hp_no')
-    groups = GroupSerializer(many=True, read_only=True, partial=True)
-    cases = CaseSerializer(required=False, many=True, read_only=True)
+class MemberSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['hp_no', 'name', 'gender', 'email', 'groups', 'cases', 'created_at', 'updated_at', 'user', 'is_admin']
 
+class GroupSerializer(serializers.ModelSerializer):
+    members = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), many=True) # to list out all members, many to many 
+    #members = MemberSerializer(many=True)
+    class Meta:
+        model = Group
+        fields = ['id', 'name', 'profile_pic', 'display_pic', 'email', 'website', 'description', 'members']
+
+class GroupListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Group
+        fields = ['id', 'name']
+
+class ResponseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Response
+        fields = ['id', 'user', 'case']
+
+class CaseSerializer(serializers.ModelSerializer):
+    users = ResponseSerializer(read_only=True, many=True, required=False)
+    class Meta:
+        model = Case
+        fields = ['case_type', 'location', 'lattitude', 'longitude', 'time', 'description', 'users']
+ 
+class UserSerializer(serializers.ModelSerializer):
+     user = serializers.ReadOnlyField(source='user.hp_no')
+     groups = GroupSerializer(many=True, read_only=True, partial=True)
+     cases = CaseSerializer(required=False, many=True, read_only=True)
+     class Meta:
+         model = User
+         fields = ['hp_no', 'name', 'gender', 'email', 'groups', 'cases', 'created_at', 'updated_at', 'user', 'is_admin']
+
+# class UserSerializer(WritableNestedModelSerializer):
+#     groups = GroupSerializer(many=True)
+#     cases = CaseSerializer(many=True)
+#     class Meta:
+#         model = User
+#         fields = ['hp_no', 'name', 'gender', 'email', 'groups', 'cases', 'created_at', 'updated_at', 'is_admin']
+
+class UserListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['hp_no', 'name', 'gender','is_admin']
+
+class PostBaseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Post
+        fields = ['id', 'body', 'user', 'group', 'image', 'comments', 'votes', 'saves', 'created_at', 'updated_at']
+
 class CommentSerializer(serializers.ModelSerializer):
-    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
     class Meta:
         model = Comment
         fields = ['content', 'post', 'user', 'created_at']
+    # def create(self, validated_data):
+    #     return Comment.objects.create(**validated_data)
 
 class SaveSerializer(serializers.ModelSerializer):
-    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
     class Meta:
         model = PostSave
-        fields = ['post', 'user', 'is_saved']
+        fields = ['post', 'user']
+
+class SaveListSerializer(serializers.ModelSerializer):
+    user = serializers.PrimaryKeyRelatedField(queryset=Group.objects.all())
+    class Meta:
+        model = PostSave
+        fields = ['user']
 
 class VoteSerializer(serializers.ModelSerializer):
-    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
     class Meta:
         model = PostVote
-        fields = ['post', 'user', 'is_voted']
+        fields = ['post', 'user']
+
+class VoteListSerializer(serializers.ModelSerializer):
+    user = serializers.PrimaryKeyRelatedField(queryset=Group.objects.all())
+    class Meta:
+        model = PostVote
+        fields = ['user']
 
 class PostSerializer(serializers.ModelSerializer):
-    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
-    group = serializers.PrimaryKeyRelatedField(queryset=Group.objects.all())
-    saves = SaveSerializer(many=True, read_only=True)
-    votes = VoteSerializer(many=True, read_only=True)
+    saves = SaveSerializer(read_only=True, many=True, required=False)
+    votes = VoteSerializer(read_only=True, many=True, required=False)
+    comments = CommentSerializer(read_only=True, many=True, required=False) # to list out all comments
+    class Meta:
+        model = Post
+        fields = ['id', 'body', 'image', 'user', 'group', 'comments', 'votes', 'saves', 'created_at', 'updated_at']   
+
+class PostListSerializer(serializers.ModelSerializer):
+    user = UserListSerializer(read_only=True)
+    group = GroupListSerializer(read_only=True)
+    saves = SaveListSerializer(many=True, read_only=True)
+    votes = VoteListSerializer(many=True, read_only=True)
     comments = CommentSerializer(many=True, read_only=True) # to list out all comments
     class Meta:
         model = Post
-        fields = ['id', 'title', 'body', 'user', 'group', 'image', 'comments', 'votes', 'saves', 'created_at', 'updated_at']   
+        fields = ['id', 'body', 'user', 'group', 'image', 'comments', 'votes', 'saves', 'created_at', 'updated_at']    
 
 class ReportSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
@@ -55,18 +107,19 @@ class ReportSerializer(serializers.ModelSerializer):
         model = Report
         fields = ['report_type', 'description', 'location', 'image', 'user', 'created_at']
 
-class AchievementProgressSerializer(serializers.HyperlinkedModelSerializer):
-    id = serializers.ReadOnlyField(source='achievement.id') # through model
-    name = serializers.ReadOnlyField(source='achievement.name')
+class UserAchievementSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = UserAchievement
-        fields = ['id', 'name', 'awarded']
+        fields = ['id', 'user', 'date_awarded']
 
 class AchievementSerializer(serializers.ModelSerializer):
-    users = AchievementProgressSerializer(source='achievementprogress_set', many=True)
+    users = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), many=True)
     class Meta:
         model = Achievement
         fields = ['id', 'name', 'condition', 'users', 'created_at']
+
+    def get_users(self, obj):
+        qset = UserAchievement.objects.filter()
 
 class AchievementRewardSerializer(serializers.ModelSerializer): #one to one rs 
     achievement = AchievementSerializer(read_only=True)
@@ -75,17 +128,18 @@ class AchievementRewardSerializer(serializers.ModelSerializer): #one to one rs
         fields = ['achievement', 'reward']
 
 class EventAttendanceSerializer(serializers.ModelSerializer):
-    id = serializers.ReadOnlyField(source='event.id')
-    name = serializers.ReadOnlyField(source='event.name')
+    event = serializers.ReadOnlyField(source='event.id')
+    user = serializers.ReadOnlyField(source='user.hp_no')
     class Meta:
         model = EventAttendance 
-        fields = ['id', 'event', 'attendance']
+        fields = ['id', 'event', 'user', 'attendance']
 
 class EventSerializer(serializers.ModelSerializer):
     users = EventAttendanceSerializer(source='eventattendance_set', many=True)
+    #users = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), many=True)
     class Meta:
         model = Event
-        fields = ['id', 'name', 'details', 'time', 'organisers', 'users']
+        fields = ['id', 'image', 'name', 'description', 'date', 'time', 'venue', 'slots', 'users']
 
 class UserCertificateSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())

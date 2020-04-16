@@ -3,6 +3,7 @@ from django.db import models
 import datetime as dt
 
 # Create your models here.
+
 class User(models.Model):
     """Model representing a user account."""
     hp_no = models.IntegerField("User Hp No.", unique=True, primary_key=True) #max length ignored when used with int
@@ -11,7 +12,7 @@ class User(models.Model):
         ('m', 'Male'),
         ('f', 'Female'),
     )
-    gender = models.CharField(max_length=1, choices=GENDER_TYPES)
+    gender = models.CharField(max_length=1, choices=GENDER_TYPES, default='m')
     is_admin = models.BooleanField("Admin User?", default=False)
     email = models.EmailField("User Email", max_length=254, null=True)
     created_at= models.DateTimeField("User Created At", auto_now_add=True, editable=True)
@@ -56,14 +57,16 @@ class Report(models.Model):
 
 class Case(models.Model):
     id = models.AutoField(primary_key=True)
-    address = models.CharField("Case Address", max_length=600)
+    location = models.CharField("Case Location", max_length=600)
+    lattitude = models.FloatField("Lattitude")
+    longitude = models.FloatField("Longitude")
     time = models.DateField("Time of Case", auto_now_add=True, editable=True)
     description = models.CharField("Case Description", max_length=600)
-    id_required = models.BooleanField("ID Required?", default=True)
     updated_at = models.DateTimeField("Case Updated At", auto_now=True, editable=True) #default setting editable=False, blank=True
     #many-to-many rs
     users = models.ManyToManyField(
-        User, 
+        User,
+        through = 'Response',
         related_name='cases',
     )
 
@@ -80,15 +83,23 @@ class Case(models.Model):
 
     class Meta:
         ordering = ('id',) 
-    
-    def __unicode__(self):
-       return unicode(self.description)
 # a case can be shown to many users 
+
+class Response(models.Model):
+    user = models.ForeignKey('User', on_delete=models.CASCADE)
+    case = models.ForeignKey('Case', on_delete=models.CASCADE)
+
+    class Meta:
+        ordering = ('id',)
 
 class Group(models.Model):
     id = models.AutoField(primary_key=True)
+    profile_pic = models.ImageField(upload_to=None, height_field=None, width_field=None, max_length=100, null=True)
+    display_pic = models.ImageField(upload_to=None, height_field=None, width_field=None, max_length=100, null=True)
     name = models.CharField("Group Name", max_length=50)
     description = models.CharField("Group Description", max_length=100)
+    email = models.EmailField("Group Email", max_length=254, null=True)
+    website = models.CharField("Group Website", max_length=100)
     created_at= models.DateTimeField("Group Created At", auto_now_add=True, editable=True)
     updated_at = models.DateTimeField("Group Updated At", auto_now=True, editable=True) #default setting editable=False, blank=True
     members = models.ManyToManyField(User, related_name='groups')
@@ -96,13 +107,10 @@ class Group(models.Model):
     class Meta:
         ordering = ('id',) 
 
-#membership
-
 class PostSave(models.Model):
     id = models.AutoField(primary_key=True)
     user = models.ForeignKey('User', on_delete=models.CASCADE)
     post = models.ForeignKey('Post', related_name='saves', on_delete=models.CASCADE)
-    is_saved = models.BooleanField(default=True)
 
     class Meta:
         ordering = ('id',)
@@ -111,7 +119,6 @@ class PostVote(models.Model):
     id = models.AutoField(primary_key=True)
     user = models.ForeignKey('User', on_delete=models.CASCADE, related_name="votes_user")
     post = models.ForeignKey('Post', related_name='votes', on_delete=models.CASCADE)
-    is_voted = models.BooleanField(default=True)
 
     class Meta:
         ordering = ('id',)
@@ -119,8 +126,7 @@ class PostVote(models.Model):
 class Post(models.Model):
     id = models.AutoField(primary_key=True)
     user = models.ForeignKey('User', on_delete=models.CASCADE, related_name="post_user")
-    group = models.ForeignKey('Group', on_delete=models.CASCADE)
-    title = models.CharField('Post Title', max_length=60, default='Title')
+    group = models.ForeignKey('Group', on_delete=models.CASCADE, null=True)
     body = models.CharField("Post Body", max_length=600)
     image = models.ImageField(upload_to=None, height_field=None, width_field=None, max_length=100, null=True)
     created_at= models.DateTimeField("Created At", auto_now_add=True, editable=True)
@@ -176,10 +182,13 @@ class UserAchievement(models.Model):
 
 class Event(models.Model):
     id = models.AutoField(primary_key=True)
+    image = models.ImageField("Event Cover Photo", upload_to=None, height_field=None, width_field=None, max_length=100, null=True)
     name = models.CharField("Event Name", max_length=50)
-    details = models.CharField("Event Details", max_length=500)
-    time = models.DateTimeField("Event Time", auto_now=False, auto_now_add=False)
-    organisers = models.CharField("Event Organisers", max_length=200)
+    description = models.CharField("Event Description", max_length=500)
+    date = models.DateField("Event Date")
+    time = models.TimeField("Event Time")
+    venue = models.CharField("Event Venue", max_length=200)
+    slots = models.IntegerField("Event Slots")
     created_at = models.DateTimeField(auto_now_add=True, editable=True)
     users = models.ManyToManyField(
         User,
@@ -196,7 +205,7 @@ class EventAttendance(models.Model):
     id = models.AutoField(primary_key=True)
     event = models.ForeignKey('Event', on_delete=models.CASCADE)
     user = models.ForeignKey('User', on_delete=models.CASCADE)
-    attendance = models.BooleanField("Event Attendance")
+    attendance = models.BooleanField("Attending?")
 
     class Meta:
         ordering = ('id',)

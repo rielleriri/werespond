@@ -44,23 +44,33 @@ Including another URLconf
 
 from django.conf.urls import url, include
 from django.contrib import admin
+from django.conf import settings
+from django.conf.urls.static import static
 from rest_framework.routers import DefaultRouter
 from werespond import views
 
 router = DefaultRouter()
 router.register(r'user', views.UserViewSet)
-router.register(r'post', views.PostViewSet)
+router.register(r'post_list', views.PostListViewSet)
 router.register(r'comment', views.CommentViewSet)
+router.register(r'post', views.PostViewSet)
 router.register(r'save', views.SaveViewSet)
 router.register(r'vote', views.VoteViewSet)
 router.register(r'group', views.GroupViewSet)
 router.register(r'case', views.CaseViewSet)
 router.register(r'achievement', views.AchievementViewSet)
+router.register(r'user_achievement', views.UserAchievementViewSet)
+router.register(r'achievement_reward', views.AchievementRewardViewSet)
 router.register(r'report', views.ReportViewSet)
 router.register(r'user_certificate', views.UserCertificateViewSet)
 router.register(r'certificate', views.CertificateFormViewSet)
+router.register(r'event', views.EventViewSet)
+router.register(r'eventattendance', views.EventAttendanceViewSet)
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
-    url(r'^api/', include(router.urls))
+    url(r'^api/', include(router.urls)),
 ]
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL,
+                          document_root=settings.MEDIA_ROOT)
