@@ -1,7 +1,7 @@
-
-from werespond.models import User, Post, Comment, PostSave, PostVote, Group, Report, Case, UserCertificate, CertificateForm, Achievement, UserAchievement, AchievementReward, Event, EventAttendance
-from werespond.serializers import UserSerializer, UserListSerializer, EventSerializer, PostListSerializer, PostSerializer, VoteSerializer, UserCertificateSerializer, EventAttendanceSerializer, CertificateFormSerializer, SaveSerializer, CommentSerializer, GroupSerializer, ReportSerializer, CaseSerializer, AchievementSerializer, UserAchievementSerializer, AchievementRewardSerializer
+from werespond.models import User, Post, Comment, PostSave, PostVote, Group, Report, Case, CertificateForm, Achievement, UserAchievement, AchievementReward, Event, UserCertificate
+from werespond.serializers import UserSerializer, UserListSerializer, EventSerializer, PostListSerializer, PostSerializer, VoteSerializer, CertificateFormSerializer, UserCertificateSerializer, SaveSerializer, CommentSerializer, GroupSerializer, ReportSerializer, CaseSerializer, AchievementSerializer, UserAchievementSerializer, AchievementRewardSerializer
 from rest_framework import viewsets
+from url_filter.integrations.drf import DjangoFilterBackend
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
@@ -30,10 +30,14 @@ class PostViewSet(viewsets.ModelViewSet):
 class PostListViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all()
     serializer_class = PostListSerializer
+    filter_backends = [DjangoFilterBackend]
+    filter_fields = ['user', 'group']
 
 class GroupViewSet(viewsets.ModelViewSet):
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
+    filter_backends = [DjangoFilterBackend]
+    filter_fields = ['members']
 
 class ReportViewSet(viewsets.ModelViewSet):
     queryset = Report.objects.all()
@@ -66,8 +70,5 @@ class UserCertificateViewSet(viewsets.ModelViewSet):
 class EventViewSet(viewsets.ModelViewSet):
     queryset = Event.objects.all()
     serializer_class = EventSerializer
-
-class EventAttendanceViewSet(viewsets.ModelViewSet):
-    queryset = EventAttendance.objects.all()
-    serializer_class = EventAttendanceSerializer
-
+    filter_backends = [DjangoFilterBackend]
+    filter_fields = ['users', 'date']

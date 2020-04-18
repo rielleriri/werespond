@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from werespond.models import User, Response, Post, PostVote, PostSave, Comment, Group, Report, Case, Achievement, UserAchievement, AchievementReward, Event, EventAttendance, UserCertificate, CertificateForm
+from werespond.models import User, Response, Post, PostVote, PostSave, Comment, Group, Report, Case, Achievement, UserCertificate, UserAchievement, AchievementReward, Event, CertificateForm
 
 class MemberSerializer(serializers.ModelSerializer):
     class Meta:
@@ -24,18 +24,39 @@ class ResponseSerializer(serializers.ModelSerializer):
         fields = ['id', 'user', 'case']
 
 class CaseSerializer(serializers.ModelSerializer):
-    users = ResponseSerializer(read_only=True, many=True, required=False)
+    users = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), many=True)
     class Meta:
         model = Case
-        fields = ['case_type', 'location', 'lattitude', 'longitude', 'time', 'description', 'users']
+        fields = ['id','case_type', 'location', 'lattitude', 'longitude', 'time', 'description', 'users']
+
+class EventSerializer(serializers.ModelSerializer):
+    users = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), many=True)
+    class Meta:
+        model = Event
+        fields = ['id', 'image', 'name', 'description', 'date', 'time', 'venue', 'users']
+
+class CertificateFormSerializer(serializers.ModelSerializer):
+    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    class Meta:
+        model = CertificateForm
+        fields = ['id', 'user', 'certificate', 'image', 'expiry', 'created_at']
+
+class UserCertificateSerializer(serializers.ModelSerializer):
+    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    class Meta:
+        model = UserCertificate
+        fields = ['id', 'user', 'cert_type', 'expiry', 'awarded_at']
  
 class UserSerializer(serializers.ModelSerializer):
      user = serializers.ReadOnlyField(source='user.hp_no')
-     groups = GroupSerializer(many=True, read_only=True, partial=True)
+     groups = GroupSerializer(many=True, read_only=True)
      cases = CaseSerializer(required=False, many=True, read_only=True)
+     events = EventSerializer(required=False, many=True, read_only=True)
+     certificates = UserCertificateSerializer(required=False, many=True, read_only=True)
+     uploaded_certs = CertificateFormSerializer(required=False, many=True, read_only=True)
      class Meta:
          model = User
-         fields = ['hp_no', 'name', 'gender', 'email', 'groups', 'cases', 'created_at', 'updated_at', 'user', 'is_admin']
+         fields = ['hp_no', 'name', 'gender', 'email', 'groups', 'cases', 'events', 'certificates', 'uploaded_certs', 'created_at', 'updated_at', 'user', 'is_admin']
 
 # class UserSerializer(WritableNestedModelSerializer):
 #     groups = GroupSerializer(many=True)
@@ -89,7 +110,7 @@ class PostSerializer(serializers.ModelSerializer):
     comments = CommentSerializer(read_only=True, many=True, required=False) # to list out all comments
     class Meta:
         model = Post
-        fields = ['id', 'body', 'image', 'user', 'group', 'comments', 'votes', 'saves', 'created_at', 'updated_at']   
+        fields = ['id', 'body', 'image', 'user', 'group', 'comments', 'votes', 'saves', 'date']   
 
 class PostListSerializer(serializers.ModelSerializer):
     user = UserListSerializer(read_only=True)
@@ -99,7 +120,7 @@ class PostListSerializer(serializers.ModelSerializer):
     comments = CommentSerializer(many=True, read_only=True) # to list out all comments
     class Meta:
         model = Post
-        fields = ['id', 'body', 'user', 'group', 'image', 'comments', 'votes', 'saves', 'created_at', 'updated_at']    
+        fields = ['id', 'body', 'user', 'group', 'image', 'comments', 'votes', 'saves', 'date']    
 
 class ReportSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
@@ -126,29 +147,3 @@ class AchievementRewardSerializer(serializers.ModelSerializer): #one to one rs
     class Meta:
         model = AchievementReward
         fields = ['achievement', 'reward']
-
-class EventAttendanceSerializer(serializers.ModelSerializer):
-    event = serializers.ReadOnlyField(source='event.id')
-    user = serializers.ReadOnlyField(source='user.hp_no')
-    class Meta:
-        model = EventAttendance 
-        fields = ['id', 'event', 'user', 'attendance']
-
-class EventSerializer(serializers.ModelSerializer):
-    users = EventAttendanceSerializer(source='eventattendance_set', many=True)
-    #users = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), many=True)
-    class Meta:
-        model = Event
-        fields = ['id', 'image', 'name', 'description', 'date', 'time', 'venue', 'slots', 'users']
-
-class UserCertificateSerializer(serializers.ModelSerializer):
-    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
-    class Meta:
-        model = UserCertificate
-        fields = ['id', 'user', 'cert_type', 'expiry', 'awarded_at']
-
-class CertificateFormSerializer(serializers.ModelSerializer):
-    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
-    class Meta:
-        model = CertificateForm
-        fields = ['id', 'user', 'certificate', 'image', 'expiry', 'created_at']

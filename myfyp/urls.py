@@ -65,7 +65,6 @@ router.register(r'report', views.ReportViewSet)
 router.register(r'user_certificate', views.UserCertificateViewSet)
 router.register(r'certificate', views.CertificateFormViewSet)
 router.register(r'event', views.EventViewSet)
-router.register(r'eventattendance', views.EventAttendanceViewSet)
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),

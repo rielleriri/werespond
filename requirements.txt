@@ -4,4 +4,4 @@ Pillow==7.0.0
 djangorestframework==3.11.0
 whitenoise==5.0.1
 django-cors-headers==3.2.1
-drf-writable-nested==0.6.0
+django-url-filter==0.3.15

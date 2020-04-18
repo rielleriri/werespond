@@ -129,8 +129,8 @@ class Post(models.Model):
     group = models.ForeignKey('Group', on_delete=models.CASCADE, null=True)
     body = models.CharField("Post Body", max_length=600)
     image = models.ImageField(upload_to=None, height_field=None, width_field=None, max_length=100, null=True)
-    created_at= models.DateTimeField("Created At", auto_now_add=True, editable=True)
-    updated_at = models.DateTimeField("Updated At", auto_now=True, editable=True) #default setting editable=False, blank=True
+    date= models.DateTimeField("Created At", auto_now_add=True, editable=True)
+    #updated_at = models.DateTimeField("Updated At", auto_now=True, editable=True) #default setting editable=False, blank=True
 
     class Meta:
         ordering = ('id',) 
@@ -188,12 +188,9 @@ class Event(models.Model):
     date = models.DateField("Event Date")
     time = models.TimeField("Event Time")
     venue = models.CharField("Event Venue", max_length=200)
-    slots = models.IntegerField("Event Slots")
     created_at = models.DateTimeField(auto_now_add=True, editable=True)
     users = models.ManyToManyField(
         User,
-        through='EventAttendance',
-        through_fields=('event','user') ,
         related_name='events',
         blank=True
     )    
